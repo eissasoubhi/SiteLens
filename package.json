@@ -1,11 +1,11 @@
 {
   "name": "sitelens",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Chrome extension that crawls and diagnoses web apps for AI-assisted frontend reviews.",
   "scripts": {
     "test": "node --test tests/*.test.cjs",
-    "check": "node --check background.js && node --check sidepanel.js && node --check runner-core.js && node --check runner-browser.js && node --check runner-analysis.js && node --check runner-scoring.js && node --check runner-crawl.js && node --check report.js && node --check zip.js && node --check crawl-utils.js"
+    "check": "node --check background.js && node --check sidepanel.js && node --check runner-core.js && node --check runner-debugger.js && node --check runner-browser.js && node --check runner-analysis.js && node --check runner-scoring.js && node --check runner-crawl.js && node --check report.js && node --check zip.js && node --check crawl-utils.js"
   },
   "engines": {
     "node": ">=20"
