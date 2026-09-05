@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Diagnostic runner</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="runner-page">
+  <main class="runner-shell">
+    <header class="runner-top">
+      <div>
+        <p class="eyebrow">AI FRONTEND DIAGNOSTIC</p>
+        <h1 id="title">Préparation du diagnostic…</h1>
+      </div>
+      <button id="stop" class="secondary">Arrêter et exporter</button>
+    </header>
+    <section class="card runner-card">
+      <div class="runner-status">
+        <div class="runner-stat"><strong id="visited">0</strong><span>Pages visitées</span></div>
+        <div class="runner-stat"><strong id="captured">0</strong><span>Captures</span></div>
+        <div class="runner-stat"><strong id="queued">0</strong><span>En attente</span></div>
+        <div class="runner-stat"><strong id="errors">0</strong><span>Erreurs</span></div>
+      </div>
+      <div class="runner-progress">
+        <div class="progress"><div id="progress"></div></div>
+        <p id="current" class="current">Initialisation…</p>
+      </div>
+      <ul id="log" class="log"></ul>
+      <p id="summary" class="runner-summary"></p>
+    </section>
+  </main>
+  <script src="zip.js"></script>
+  <script src="crawl-utils.js"></script>
+  <script src="runner-core.js"></script>
+  <script src="runner-browser.js"></script>
+  <script src="runner-analysis.js"></script>
+  <script src="runner-scoring.js"></script>
+  <script src="runner-crawl.js"></script>
+</body>
+</html>
