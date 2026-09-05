@@ -1,6 +1,6 @@
 {
   "name": "sitelens",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Chrome extension that crawls and diagnoses web apps for AI-assisted frontend reviews.",
   "scripts": {
