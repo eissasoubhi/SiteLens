@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SiteLens</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="sidepanel-page">
+  <main class="side-shell">
+    <header class="side-header">
+      <div>
+        <p class="eyebrow">LOCAL FRONTEND → AI</p>
+        <h1>Frontend Diagnostic</h1>
+      </div>
+      <span class="badge">v0.1.0</span>
+    </header>
+
+    <section class="card compact">
+      <label class="field no-margin">
+        <span>Site à auditer</span>
+        <input id="startUrl" type="url" placeholder="http://jobpilot.test" />
+      </label>
+      <label class="field">
+        <span>Nom du projet <small>(optionnel)</small></span>
+        <input id="projectName" type="text" placeholder="JobPilot" />
+      </label>
+    </section>
+
+    <section class="section-block">
+      <div class="section-title-row">
+        <h2>Mode</h2>
+        <span id="modeHint" class="micro">Full recommandé</span>
+      </div>
+      <div class="mode-grid" role="radiogroup" aria-label="Mode de diagnostic">
+        <label class="mode-card"><input type="radio" name="mode" value="quick" /><span class="mode-name">⚡ Quick</span><span class="mode-desc">Contrôle quotidien</span></label>
+        <label class="mode-card selected"><input type="radio" name="mode" value="full" checked /><span class="mode-name">● Full</span><span class="mode-desc">Défaut · pour ChatGPT</span></label>
+        <label class="mode-card"><input type="radio" name="mode" value="deep" /><span class="mode-name">🧪 Deep</span><span class="mode-desc">Diagnostic avancé</span></label>
+      </div>
+    </section>
+
+    <details class="card advanced">
+      <summary>Réglages avancés</summary>
+      <div class="details-body">
+        <div class="grid-2">
+          <label class="field"><span>Nombre maximal de pages</span><input id="maxPages" type="number" min="1" max="500" value="100" /><small class="field-help">Plafond de sécurité du crawler. Full utilise 100 par défaut ; augmente-le si ton site contient davantage de routes.</small></label>
+          <label class="field"><span>Attente après chargement</span><select id="settleMs" title="Temps supplémentaire attendu après le chargement et l’accalmie réseau avant les mesures et captures."><option value="500">0,5 s</option><option value="900" selected>0,9 s</option><option value="1500">1,5 s</option><option value="2500">2,5 s</option></select><small class="field-help">Laisse le DOM, les polices et les composants asynchrones se stabiliser avant l’audit.</small></label>
+        </div>
+        <h3>Viewports</h3><div class="checks two-col"><label title="Capture avec les dimensions actuelles de l’onglet Chrome."><input id="viewportCurrent" type="checkbox" /> Viewport actuel</label><label><input id="viewportDesktop" type="checkbox" checked /> Desktop</label><label><input id="viewportTablet" type="checkbox" checked /> Tablette</label><label><input id="viewportMobile" type="checkbox" checked /> Mobile</label></div>
+        <h3>Exploration</h3><div class="checks"><label title="Ex.: /jobs?page=1 et /jobs?page=2 seront deux pages distinctes."><input id="includeQuery" type="checkbox" /> Traiter les paramètres ?query comme des pages distinctes</label><label title="Ex.: /docs#intro et /docs#faq seront distincts. Les routes SPA de type #/jobs sont préservées automatiquement."><input id="includeHash" type="checkbox" /> Traiter les #ancres comme des pages distinctes</label><label><input id="lazyScroll" type="checkbox" checked /> Déclencher le lazy-loading</label><label><input id="rawDomSnapshot" type="checkbox" /> Raw DOM snapshot <span class="danger-text">(peut contenir des données sensibles)</span></label></div>
+        <label class="field"><span>Routes supplémentaires <small>(optionnel)</small></span><textarea id="extraRoutes" rows="3" placeholder="/jobs&#10;/dashboard&#10;/settings"></textarea><small class="field-help">Force le crawler à visiter des routes qu’il ne peut pas découvrir via les liens, le sitemap ou les indices SPA.</small></label>
+        <label class="field"><span>Ignorer si l’URL contient</span><textarea id="ignorePatterns" rows="4">/logout
+/signout
+/delete
+/remove
+/destroy</textarea></label>
+        <div class="grid-2"><label class="field"><span>Branche Git <small>(optionnel)</small></span><input id="gitBranch" type="text" placeholder="main" /><small class="field-help">Métadonnée pour rattacher le diagnostic à la branche source exacte.</small></label><label class="field"><span>Commit Git <small>(optionnel)</small></span><input id="gitCommit" type="text" placeholder="a1b2c3d" /><small class="field-help">SHA du commit audité, utile pour comparer les diagnostics et retrouver le code correspondant.</small></label></div>
+      </div>
+    </details>
+
+    <p id="error" class="error" role="alert"></p>
+    <button id="run" class="primary big">▶ Crawler et diagnostiquer tout le site</button>
+    <div class="secondary-actions"><button id="captureState" class="secondary" title="Capture uniquement l’état exact de l’onglet actuel sans lancer le crawler.">📸 Capturer cet état</button><button id="markIssue" class="secondary" title="Sélectionne un élément de la page et ajoute ton commentaire au prochain diagnostic.">🎯 Marquer un problème UX</button></div>
+    <p class="action-help">Le diagnostic principal explore automatiquement les routes du même site. Les deux boutons ci-dessus servent aux états UI particuliers et à tes remarques manuelles.</p>
+
+    <section id="live" class="card live-card hidden" aria-live="polite"><div class="live-head"><div><span class="micro">DIAGNOSTIC EN COURS</span><strong id="liveId">—</strong></div><span id="liveMode" class="pill">FULL</span></div><div class="progress"><div id="progressBar"></div></div><div class="status-grid mini"><div><strong id="visited">0</strong><span>visitées</span></div><div><strong id="queued">0</strong><span>en attente</span></div><div><strong id="captures">0</strong><span>captures</span></div><div><strong id="errors">0</strong><span>erreurs</span></div></div><p id="currentPage" class="current">Préparation…</p></section>
+
+    <section class="section-block"><div class="section-title-row"><h2>Annotations UX</h2><button id="clearAnnotations" class="link-button">Effacer</button></div><p id="annotationCount" class="muted">Aucune annotation en attente.</p></section>
+    <section class="section-block history-section"><div class="section-title-row"><h2>Diagnostics récents</h2><button id="refreshHistory" class="link-button">Actualiser</button></div><div id="history" class="history-list"></div></section>
+  </main>
+  <script src="sidepanel.js"></script>
+</body>
+</html>
