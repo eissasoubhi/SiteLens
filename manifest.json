@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "SiteLens",
   "short_name": "SiteLens",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Crawl and diagnose web apps for AI review with per-page screenshots, console, network, performance, accessibility and DOM context.",
   "minimum_chrome_version": "116",
   "permissions": [
