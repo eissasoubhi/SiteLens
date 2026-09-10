@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Diagnostic report</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="report-page">
+  <main class="report-shell">
+    <a class="back-link" href="sidepanel.html">← Frontend Diagnostic</a>
+    <header class="report-header">
+      <div>
+        <p class="eyebrow">DIAGNOSTIC SUMMARY</p>
+        <h1 id="reportTitle">Diagnostic</h1>
+        <p id="reportMeta" class="muted"></p>
+      </div>
+      <div class="score-ring"><strong id="overallScore">—</strong><span>/100</span></div>
+    </header>
+    <section id="comparison" class="comparison card hidden"></section>
+    <section class="score-cards" id="scoreCards"></section>
+    <section class="card report-card">
+      <h2>Résumé</h2>
+      <div id="summaryGrid" class="summary-grid"></div>
+    </section>
+    <section class="card report-card">
+      <h2>Problèmes prioritaires</h2>
+      <div id="issues" class="issue-list"></div>
+    </section>
+    <p class="muted footnote">Les détails complets, screenshots et données par page sont dans le ZIP généré lors du diagnostic.</p>
+  </main>
+  <script src="report.js"></script>
+</body>
+</html>
