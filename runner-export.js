@@ -35,6 +35,41 @@ function exportableConfig() {
   };
 }
 
+function sanitizeDiscoveryUrl(raw) {
+  if (!raw) return raw;
+  try {
+    const value = String(raw);
+    const url = new URL(value, report?.origin || undefined);
+    const appOrigin = report?.origin ? new URL(report.origin).origin : null;
+    if (appOrigin && url.origin !== appOrigin) {
+      return `${url.origin}/[REDACTED_EXTERNAL_PATH]`;
+    }
+    return safeUrl(url.href);
+  } catch {
+    return redactText(String(raw));
+  }
+}
+
+function sanitizeDiscoveryForExport(discovery) {
+  if (!discovery || typeof discovery !== 'object') return discovery;
+
+  const sanitizeItem = (item) => {
+    if (typeof item === 'string') return sanitizeDiscoveryUrl(item);
+    if (!item || typeof item !== 'object') return item;
+    const next = { ...item };
+    for (const key of ['url', 'href', 'candidate', 'value']) {
+      if (typeof next[key] === 'string') next[key] = sanitizeDiscoveryUrl(next[key]);
+    }
+    return next;
+  };
+
+  const next = { ...discovery };
+  for (const key of ['rejected', 'candidates', 'remainingQueue', 'queued', 'discovered']) {
+    if (Array.isArray(next[key])) next[key] = next[key].map(sanitizeItem);
+  }
+  return next;
+}
+
 function markdownForPage(page) {
   const lines = [
     `# ${redactText(page.title || page.pageId || 'Page')}`,
@@ -101,7 +136,7 @@ function enhancedZipDashboard() {
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${exportHtmlEscape(report.diagnosticId)}</title><style>
   body{font:14px system-ui;margin:0;background:#f5f6f8;color:#17191d}main{max-width:1600px;margin:auto;padding:24px}h1{margin:0}.meta{color:#667085}.scores{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.score{background:white;border:1px solid #ddd;border-radius:10px;padding:10px 14px}.score b{font-size:22px;display:block}.grid{display:grid;gap:18px}.page-card{background:white;border:1px solid #ddd;border-radius:12px;overflow:hidden}.copy{padding:14px}.row{display:flex;justify-content:space-between;gap:8px}.row b{font-size:20px}.copy a{display:block;color:#175cd3;word-break:break-all;margin-top:5px}.copy p{color:#667085;font-size:12px}.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:#ddd}.shot{margin:0;background:#fff;min-width:0}.shot img{width:100%;height:auto;display:block;background:#eee}.shot figcaption{padding:8px 10px;color:#475467;font-size:12px}.no-shot{height:180px;display:grid;place-items:center;background:#eee;color:#777}.privacy{padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;color:#9a3412}</style></head><body><main>
   <h1>${exportHtmlEscape(report.project.name || 'Site')} — ${exportHtmlEscape(report.diagnosticId)}</h1><p class="meta">${exportHtmlEscape(report.mode.toUpperCase())} · ${exportHtmlEscape(report.startedAt)} · ${exportHtmlEscape(report.origin)}</p>
-  <p class="privacy"><strong>Privacy:</strong> textual metadata is redacted for common e-mail/API-key patterns. Screenshots can still contain visible sensitive information and must be reviewed before sharing.</p>
+  <p class="privacy"><strong>Privacy:</strong> textual metadata redacts common e-mail/API-key patterns and external discovery paths. Screenshots can still contain visible sensitive information and must be reviewed before sharing.</p>
   <div class="scores">${['overall','ui','performance','accessibility','console','network'].map((key) => `<div class="score"><span>${key}</span><b>${report.scores[key] ?? '—'}</b></div>`).join('')}</div>
   <p><strong>${report.summary.pagesVisited}</strong> pages · <strong>${report.summary.captures}</strong> screenshots · <strong>${report.summary.consoleErrors}</strong> scored JS errors · <strong>${report.summary.failedRequests}</strong> failed requests · <strong>${report.summary.accessibilityViolations}</strong> accessibility findings</p>
   <div class="grid">${cards}</div></main></body></html>`;
@@ -125,9 +160,16 @@ zip.add = function hardenedZipAdd(path, data) {
           formValues: false,
           textualEmailRedaction: true,
           textualApiKeyRedaction: true,
+          externalDiscoveryPathsRedacted: true,
           screenshotsMayContainSensitivePixels: true
         }
       }, null, 2);
+    } catch {}
+  }
+
+  if (path === 'global/discovery.json' && typeof data === 'string') {
+    try {
+      nextData = JSON.stringify(sanitizeDiscoveryForExport(JSON.parse(data)), null, 2);
     } catch {}
   }
 
@@ -141,7 +183,7 @@ zip.add = function hardenedZipAdd(path, data) {
   if (path === 'report/index.html') nextData = enhancedZipDashboard();
 
   if (path === 'README.md' && typeof nextData === 'string') {
-    nextData += '\n\n## Sharing safety\n\nTextual metadata redacts common e-mail and MPC API-key patterns. Screenshots are visual evidence and can still show private information; review them before sharing an archive.\n';
+    nextData += '\n\n## Sharing safety\n\nTextual metadata redacts common e-mail and MPC API-key patterns. External URLs rejected during discovery keep their origin but not their path/query/fragment. Screenshots are visual evidence and can still show private information; review them before sharing an archive.\n';
   }
 
   return rawZipAdd(path, nextData);
